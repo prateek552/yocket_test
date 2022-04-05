@@ -1,0 +1,11 @@
+{
+  "name": "yocketService",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^8.5.0",
+    "serverless-prune-plugin": "^2.0.1"
+  }
+}

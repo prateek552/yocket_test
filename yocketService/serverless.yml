@@ -1,0 +1,76 @@
+service: yocketservice
+
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  yocketUserDataTable: ${self:service}-${self:custom.stage}-user-post-table
+  tableThroughputs:
+    dev: 2
+  prune:
+    automatic: true
+    number: 3
+  dynamodb:
+    stages:
+      - dev
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-west-1
+  #apiKeys:
+   # - ${self:service}-${self:custom.stage}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:Query"
+        - "dynamodb:Scan"
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:BatchWriteItem"
+      Resource:
+        - "Fn::GetAtt": [YocketServiceUserDataTable, Arn]
+
+  environment:
+    YOCKET_USER_POST_TABLE: ${self:custom.yocketUserDataTable}
+
+
+functions:
+  putPost:
+    handler: handlers/PostHandler.putPost
+    events:
+      - http:
+          path: /user/post/putPost
+          method: POST
+          cors: true
+         # private: true
+
+  fetchPost:
+    handler: handlers/PostHandler.fetchPost
+    events:
+      - http:
+          path: /user/post/fetchPost
+          method: POST
+          cors: true
+          #private: true
+          request:
+            template:
+              application/json: >
+                {
+                  "date" : "$input.params('date')",
+                  "limit": "$input.params('limit')",
+                  "lastEvaluatedKey": "$input.params('lastEvaluatedKey')"
+                }
+
+resources:
+  - ${file(aws-resources/dynamodb.yml)}
+
+
+plugins:
+  - serverless-prune-plugin
+  - serverless-offline
+  - serverless-dynamodb-local

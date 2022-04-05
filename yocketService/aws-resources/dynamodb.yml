@@ -1,0 +1,19 @@
+Resources:
+  YocketServiceUserDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.yocketUserDataTable}
+      AttributeDefinitions:
+        - AttributeName: Date #jobId / timestamp
+          AttributeType: S
+        - AttributeName: TimeStamp #SiteID
+          AttributeType: N
+      KeySchema:
+        - AttributeName: Date # jobid
+          KeyType: HASH
+        - AttributeName: TimeStamp # SiteID
+          KeyType: RANGE
+        # Set the capacity based on the stage
+      ProvisionedThroughput:
+        ReadCapacityUnits: ${self:custom.tableThroughputs.${self:custom.stage}}
+        WriteCapacityUnits: ${self:custom.tableThroughputs.${self:custom.stage}}      
